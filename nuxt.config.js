@@ -71,13 +71,13 @@ export default {
             ssr: false, // default
             //emulatorPort: 9099,
             //emulatorHost: 'http://localhost',
-            emulatorPort: process.env.NODE_ENV === 'development' ? 9099 : undefined,
+            //emulatorPort: process.env.NODE_ENV === 'development' ? 9099 : undefined,
           },
           firestore: {
             memoryOnly: false, // default
             chunkName: process.env.NODE_ENV !== 'production' ? 'firebase-auth' : '[id]', // default
             enablePersistence: true,
-            emulatorPort: process.env.NODE_ENV === 'development' ? 8181 : undefined,
+            //emulatorPort: process.env.NODE_ENV === 'development' ? 8181 : undefined,
             //emulatorHost: 'localhost',
             //emulatorPort: process.env.NODE_ENV === 'development' ? 8181 : undefined,
             settings: {
