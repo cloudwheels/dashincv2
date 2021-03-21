@@ -77,7 +77,7 @@ export default {
             memoryOnly: false, // default
             chunkName: process.env.NODE_ENV !== 'production' ? 'firebase-auth' : '[id]', // default
             enablePersistence: true,
-            emulatorPort: 8181,
+            emulatorPort: process.env.NODE_ENV === 'development' ? 8181 : undefined,
             //emulatorHost: 'localhost',
             //emulatorPort: process.env.NODE_ENV === 'development' ? 8181 : undefined,
             settings: {
