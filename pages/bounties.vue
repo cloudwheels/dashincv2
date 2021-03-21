@@ -17,6 +17,8 @@
       :search="search"
       show-group-by
       show-expand
+      loading="dataLoading"
+      loading-text="Loading... Please wait"
       :expanded.sync="expanded"
       class="elevation-1"
     >
@@ -39,25 +41,49 @@
                       @change="updateBountyField(editedItem.title)"
                     ></v-text-field>
                   </v-col>
+                </v-row>
+                <v-row>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field
                       :value="editedItem.description"
                       label="Description"
                     ></v-text-field>
                   </v-col>
-                  <v-col
-                    v-for="task in editedItem.tasks"
-                    :key="task.id"
-                    cols="12"
-                    sm="6"
-                    md="4"
-                  >
-                    <v-text-field
-                      :value="task.description"
-                      name="description"
-                      label="Task Description"
-                      @change="updateBountyTask(task.id, task.description)"
-                    ></v-text-field>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <Task
+                      v-for="task in editedItem.tasksProduction"
+                      :key="task.id"
+                      :description="task.description"
+                      @updateDescription="
+                        updateTaskDescription(task.id, task.description, $event)
+                      "
+                    />
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <Task
+                      v-for="task in editedItem.tasksSpecification"
+                      :key="task.id"
+                      :description="task.description"
+                      @updateDescription="
+                        updateTaskDescription(task.id, task.description, $event)
+                      "
+                    />
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <Task
+                      v-for="task in editedItem.tasksQA"
+                      :key="task.id"
+                      :description="task.description"
+                      @updateDescription="
+                        updateTaskDescription(task.id, task.description, $event)
+                      "
+                    />
                   </v-col>
                 </v-row>
               </v-container>
@@ -114,14 +140,19 @@ export default {
 }
 */
 import { mapGetters, mapActions } from 'vuex'
+import Task from '~/components/Task.vue'
 
 export default {
   name: 'BountiesPage',
+  components: {
+    Task,
+  },
   data() {
     return {
       dialog: false,
       dialogDelete: false,
       expanded: [],
+      dataLoading: true,
       editedIndex: -1,
       editedItem: {
         id: '',
@@ -184,7 +215,10 @@ export default {
     },
   },
   created() {
-    this.bindBounties()
+    this.bindBounties().then(() => {
+      console.log('DATA LOADED')
+      this.dataLoading = false
+    })
   },
   methods: {
     ...mapGetters(['getBounties']),
@@ -289,6 +323,28 @@ export default {
         change: update,
       })
     },
+
+    updateTaskDescription(key, original, newValue) {
+      // console.dir(newValue)
+      // alert(`UPDATE DESCRIPTION of task ${key} from ${original} ${newValue}`)
+      const update = {
+        key: 'description',
+        value: newValue,
+        originalValue: original,
+      }
+
+      console.log('update', update)
+      // this.isEditing = false
+      // this.bountyItem.title = this.$refs.bountyEditor.title.value
+      // this.$emit('update', update)
+
+      this.updateTask({
+        bountyId: this.Bounties[this.editedIndex].id,
+        taskId: key,
+        change: update,
+      })
+    },
+
     updateBountyTask(taskId, original) {
       console.log('taskId:', taskId)
       console.log('value:', original)

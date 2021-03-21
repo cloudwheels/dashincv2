@@ -13,15 +13,12 @@
 <template>
   <div>
     <v-container>
-      <v-row
-        ><v-col>editing? {{ editing }}</v-col></v-row
-      >
       <v-row align="start">
         <v-col cols="1">
           <v-simple-checkbox></v-simple-checkbox>
         </v-col>
         <v-col v-if="editing" cols="8" class="textEditCol">
-          <v-textarea :value="description" class="textEdit"></v-textarea>
+          <v-textarea v-model="editedDescription" class="textEdit"></v-textarea>
         </v-col>
         <v-col v-else cols="8"
           ><div :class="{ completed: completed }" @click="editDescription()">
@@ -57,15 +54,20 @@
       </v-row>
       <v-row v-if="editing">
         <v-col cols="1"></v-col>
-        <v-col cols="11"><v-btn @click="cancelEdit()">cancel</v-btn></v-col>
+        <v-col cols="11"
+          ><v-btn @click="cancelEdit()">cancel</v-btn>
+          <v-btn @click="saveEdit()">update</v-btn></v-col
+        >
       </v-row>
       <v-row>
         <v-col cols="1"></v-col>
         <v-col cols="11"
-          ><v-chip color="primary" @click="openDialogSetReward()"
-            ><v-icon>mdi-bitcoin</v-icon> {{ dashAmount }}
-          </v-chip></v-col
-        >
+          ><v-chip color="primary" @click="openDialogSetReward()">
+            <!--<v-icon>mdi-bitcoin</v-icon>-->
+            {{ dashAmount }} DASH
+          </v-chip>
+          <v-badge offset-x="5" offset-y="-5" color="green"></v-badge>
+        </v-col>
       </v-row>
       <v-row v-if="editing">
         <v-col cols="1"></v-col>
@@ -84,6 +86,7 @@
                 v-bind="attrs"
                 :input-value="selected"
                 close
+                small
                 @click="select"
                 @click:close="removeSkill(item)"
               >
@@ -97,7 +100,7 @@
         <v-col cols="1"></v-col>
         <v-col cols="11">
           <template v-for="(item, index) in skillChips">
-            <v-chip :key="index">
+            <v-chip :key="index" small>
               <strong>{{ item }}</strong
               ><v-spacer></v-spacer>
             </v-chip>
@@ -110,7 +113,11 @@
         <v-card-title>Set Dash Reward</v-card-title>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="closeDialogSetReward()"
+          <v-btn
+            small
+            color="blue darken-1"
+            text
+            @click="closeDialogSetReward()"
             >Cancel</v-btn
           >
           <!--
@@ -171,12 +178,17 @@ export default {
   components: {
     memberList: MemberList,
   },
+  props: {
+    id: String,
+    description: String,
+  },
   data() {
     return {
-      description: 'my task',
+      // description: 'my task',
       dashAmount: 2,
       canEdit: true,
       editing: false,
+      editedDescription: '',
       completed: true,
       dialogSetReward: false,
       dialogSetDue: false,
@@ -189,12 +201,19 @@ export default {
   },
   methods: {
     editDescription() {
+      this.editedDescription = this.description
+      console.log('editing', this.editedDescription)
       this.editing = true
       // return (this.editing = true)
     },
     cancelEdit() {
       this.editing = false
       // return this.editing
+    },
+    saveEdit() {
+      this.$emit('updateDescription', this.editedDescription)
+      this.editing = false
+      this.editedDescription = ''
     },
     openDialogSetReward() {
       this.dialogSetReward = true

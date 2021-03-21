@@ -90,9 +90,9 @@ export const actions = {
 
   // bounty-cards
   // firestore bindings
-  bindBounties: firestoreAction(async function ({ bindFirestoreRef }) {
+  bindBounties: firestoreAction(function ({ bindFirestoreRef }) {
     const ref = this.$fire.firestore.collection('bounty-cards')
-    await bindFirestoreRef('bounties', ref, { wait: true })
+    return bindFirestoreRef('bounties', ref, { wait: true })
   }),
   unbindBounties: firestoreAction(function ({ unbindFirestoreRef }) {
     unbindFirestoreRef('bounties', false)
@@ -135,7 +135,7 @@ export const actions = {
   }),
 
   updateTask: firestoreAction(function (context, payload) {
-    console.log('vuex update action called with payload:', payload)
+    console.log('vuex update task action called with payload:', payload)
     // console.log
     this.$fire.firestore
       .collection('tasks')
