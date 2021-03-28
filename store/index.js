@@ -10,6 +10,7 @@ export const state = () => ({
   editingBounty: {},
   editingTask: {},
   myTasks: [],
+  claims: [],
 })
 export const mutations = {
   ON_AUTH_STATE_CHANGED_MUTATION: (state, { authUser, claims }) => {
@@ -302,6 +303,26 @@ export const actions = {
       .where('assignedMemberId', '==', user.uid)
     return bindFirestoreRef('myTasks', ref, { wait: true })
   }),
+
+  // profiles (currently roles)
+  bindClaims: firestoreAction(async function ({ bindFirestoreRef }) {
+    const ref = this.$fire.firestore
+      .collection('claims')
+      .orderBy('claimDate', 'desc')
+    await bindFirestoreRef('claims', ref, { wait: true })
+  }),
+  unbindClaims: firestoreAction(function ({ unbindFirestoreRef }) {
+    unbindFirestoreRef('claims', false)
+  }),
+
+  addClaim: firestoreAction(function (context, payload) {
+    console.log('ADD CLAIM. PAYLOAD:', payload)
+    const ts = this.$fireModule.firestore.Timestamp.fromDate(
+      new Date(payload.claimDateTime)
+    )
+    payload.claimDateTime = ts
+    return this.$fire.firestore.collection('claims').add(payload)
+  }),
 }
 export const getters = {
   user(state) {
@@ -343,6 +364,11 @@ export const getters = {
   getConcepts(state) {
     return state.concepts
   },
+
+  getClaims(state) {
+    return state.claims
+  },
+
   /*
   count(state) {
     return state.countDocument.count

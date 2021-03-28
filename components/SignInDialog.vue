@@ -9,7 +9,7 @@
     <div>
       <v-card class="px-4">
         <v-card-actions>
-          <v-btn color="primary" flat @click.stop="dialog = false">Close</v-btn>
+          <v-btn color="primary" text @click.stop="dialog = false">Close</v-btn>
         </v-card-actions>
         <v-card-text>
           <v-form ref="loginForm" v-model="valid" lazy-validation>

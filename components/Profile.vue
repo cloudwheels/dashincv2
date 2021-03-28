@@ -52,7 +52,7 @@ export default {
         }`
       )
       */
-      if ($store.state.user) {
+      if (this.$store.state.user) {
         return (
           this.$store.state.user.superadmin &&
           !this.profile.role.superadmin &&
@@ -78,7 +78,7 @@ export default {
         }`
       )
       */
-      if ($store.state.user) {
+      if (this.$store.state.user) {
         return (
           this.$store.state.user.superadmin &&
           this.profile.role.admin &&

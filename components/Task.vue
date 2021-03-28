@@ -153,6 +153,21 @@
           </template>
         </v-col>
       </v-row>
+      <v-row v-if="canClaim">
+        <v-col cols="1"></v-col>
+        <v-col cols="11">
+          <v-btn @click="dialogClaim = true">Claim</v-btn>
+
+          <v-dialog
+            v-if="dialogClaim"
+            :value="true"
+            max-width="450px"
+            background-color="white"
+            @input="dialogClaim = false"
+            ><TaskClaim :task="task" @cancel="dialogClaim = false" />
+          </v-dialog>
+        </v-col>
+      </v-row>
     </v-container>
   </div>
 </template>
@@ -162,6 +177,7 @@ import { mapGetters, mapActions } from 'vuex'
 import MemberPicker from '~/components/MemberPicker.vue'
 import DueDatePicker from '~/components/DueDatePicker.vue'
 import RewardPicker from '~/components/RewardPicker.vue'
+import TaskClaim from '~/components/TaskClaim.vue'
 export default {
   name: 'Task',
   components: {
@@ -169,6 +185,7 @@ export default {
     DueDatePicker,
     RewardPicker,
     MemberPicker,
+    TaskClaim,
   },
   props: {
     // task: { type: Object, default: () => {} },
@@ -187,6 +204,7 @@ export default {
       skillChips: ['Platform'],
       skills: ['javascript', 'front-end', 'vue', 'react', 'database', 'golang'],
       menuItems: [{ title: 'View Id' }],
+      dialogClaim: false,
     }
   },
 
@@ -195,32 +213,40 @@ export default {
       return this.getTasks()
     },
     canEditDescription() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canEditAssigned() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canEditDue() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canEditReward() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
+    },
+    canClaim() {
+      return (
+        this.$store.state.user != null &&
+        (this.isPublished ||
+          (this.task.assignedMemberId === this.$store.state.user.uid &&
+            !this.task.complete))
+      )
     },
     isPublished() {
       console.log(`Published?:`)

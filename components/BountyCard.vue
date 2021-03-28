@@ -174,35 +174,35 @@ export default {
       }
     },
     canEditTitle() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canEditDescription() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canAddTasksSpecification() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canAddTasksProduction() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false
       }
     },
     canAddTasksQA() {
-      if ($store.state.user) {
+      if (this.$store.state.user != null) {
         return this.$store.state.user.admin || this.$store.state.user.superadmin
       } else {
         return false

@@ -3,6 +3,14 @@
     <!-- nav drawer -->
     <v-navigation-drawer v-model="drawer" :clipped="clipped" fixed app>
       <v-list>
+        <v-list-item to="/">
+          <v-list-item-action>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Home</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item
           v-if="!$store.state.user"
           @click.stop="showSignInDialog = true"
@@ -27,12 +35,12 @@
           </v-list-item-content>
           <RegisterDialog v-model="showRegisterDialog" />
         </v-list-item>
-        <v-list-item v-if="$store.state.user" to="/profile">
+        <v-list-item v-if="$store.state.user" to="/dashboard">
           <v-list-item-action>
             <v-icon>mdi-account</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Profile</v-list-item-title>
+            <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item v-if="$store.state.user" @click="signOut">

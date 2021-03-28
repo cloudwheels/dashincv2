@@ -95,10 +95,24 @@ export default {
           filterable: true,
         },
         {
+          text: 'admin 1',
+          align: 'start',
+          sortable: true,
+          value: 'adminPrimary',
+          filterable: true,
+        },
+        {
+          text: 'admin 2',
+          align: 'start',
+          sortable: true,
+          value: 'adminSecondary',
+          filterable: true,
+        },
+        {
           text: 'type',
           align: 'start',
           sortable: true,
-          value: 'worktype',
+          value: 'workType',
         },
         {
           text: 'Actions',
