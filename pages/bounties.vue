@@ -24,81 +24,10 @@
     >
       <!--HEADER -->
       <template v-slot:top>
-        <v-dialog v-model="dialog" max-width="500px">
-          <v-card>
-            <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
-            </v-card-title>
+        <!-- BountyCard editig component-->
 
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field
-                      :value="editedItem.title"
-                      label="Title"
-                      name="title"
-                      @change="updateBountyField(editedItem.title)"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field
-                      :value="editedItem.description"
-                      label="Description"
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col>
-                    <Task
-                      v-for="task in editedItem.tasksProduction"
-                      :key="task.id"
-                      :description="task.description"
-                      @updateDescription="
-                        updateTaskDescription(task.id, task.description, $event)
-                      "
-                    />
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col>
-                    <Task
-                      v-for="task in editedItem.tasksSpecification"
-                      :key="task.id"
-                      :description="task.description"
-                      @updateDescription="
-                        updateTaskDescription(task.id, task.description, $event)
-                      "
-                    />
-                  </v-col>
-                </v-row>
-                <v-row>
-                  <v-col>
-                    <Task
-                      v-for="task in editedItem.tasksQA"
-                      :key="task.id"
-                      :description="task.description"
-                      @updateDescription="
-                        updateTaskDescription(task.id, task.description, $event)
-                      "
-                    />
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-            <!--
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="blue darken-1" text @click="close">
-                    Cancel
-                  </v-btn>
-                  <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
-                </v-card-actions>
-              -->
-          </v-card>
-        </v-dialog>
+        <BountyCard v-model="dialog" :bountyid="editedItem" />
+
         <v-dialog v-model="dialogDelete" max-width="500px">
           <v-card>
             <v-card-title class="headline"
@@ -123,6 +52,7 @@
         <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
         <!--<v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>-->
       </template>
+      <!-- eslint-disable-next-line vue/no-template-shadow -->
       <template v-slot:expanded-item="{ headers, item }">
         <td :colspan="headers.length">More info about {{ item.title }}</td>
       </template>
@@ -130,22 +60,13 @@
   </v-card>
 </template>
 <script>
-/*
-import Bounties from '~/components/Bounties.vue'
-
-export default {
-  components: {
-    Bounties,
-  },
-}
-*/
 import { mapGetters, mapActions } from 'vuex'
-import Task from '~/components/Task.vue'
+import BountyCard from '~/components/BountyCard.vue'
 
 export default {
   name: 'BountiesPage',
   components: {
-    Task,
+    BountyCard,
   },
   data() {
     return {
@@ -154,11 +75,7 @@ export default {
       expanded: [],
       dataLoading: true,
       editedIndex: -1,
-      editedItem: {
-        id: '',
-        title: '',
-        description: '',
-      },
+      editedItem: '',
       search: '',
 
       headers: [
@@ -207,23 +124,34 @@ export default {
     },
   },
   watch: {
+    /*
     dialog(val) {
       val || this.close()
     },
+    */
     dialogDelete(val) {
       val || this.closeDelete()
     },
   },
   created() {
-    this.bindBounties().then(() => {
-      console.log('DATA LOADED')
-      this.dataLoading = false
+    this.bindProfiles().then(() => {
+      console.log('member data loaded')
+      this.bindTasks().then(() => {
+        console.log('TASK DATA LOADED')
+        // this.dataLoading = false
+        this.bindBounties().then(() => {
+          console.log('DATA LOADED')
+          this.dataLoading = false
+        })
+      })
     })
   },
   methods: {
     ...mapGetters(['getBounties']),
     ...mapActions([
       'bindBounties',
+      'bindTasks',
+      'bindProfiles',
       'addBounty',
       'updateBounty',
       'deleteBounty',
@@ -248,7 +176,9 @@ export default {
     editItem(item) {
       console.log('item:', item)
       this.editedIndex = this.Bounties.indexOf(item)
-      this.editedItem = Object.assign({}, item)
+      // this.editedItem = Object.assign({}, item)
+
+      this.editedItem = this.Bounties[this.editedIndex].id
       this.dialog = true
     },
     deleteItem(item) {
@@ -277,108 +207,6 @@ export default {
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
-      })
-    },
-
-    save() {
-      /*
-        if (this.editedIndex > -1) {
-          Object.assign(this.desserts[this.editedIndex], this.editedItem)
-        } else {
-          this.desserts.push(this.editedItem)
-        }
-        */
-      this.close()
-    },
-    updateBountyField(original) {
-      console.log('value:', original)
-      console.log(
-        'event:',
-        event,
-        'update :',
-        event.target.name,
-        ' value:',
-        event.target.value
-      )
-      console.log('EDITED ITEM:', this.editedItem)
-      console.log(
-        'this.Bounties[this.editedIndex]:',
-        this.Bounties[this.editedIndex]
-      )
-
-      // console.log('current bounty', this.bountyItem)
-
-      const update = {
-        key: event.target.name,
-        value: event.target.value,
-        originalValue: original,
-      }
-
-      console.log('update', update)
-      // this.isEditing = false
-      // this.bountyItem.title = this.$refs.bountyEditor.title.value
-      // this.$emit('update', update)
-      this.updateBounty({
-        id: this.Bounties[this.editedIndex].id,
-        change: update,
-      })
-    },
-
-    updateTaskDescription(key, original, newValue) {
-      // console.dir(newValue)
-      // alert(`UPDATE DESCRIPTION of task ${key} from ${original} ${newValue}`)
-      const update = {
-        key: 'description',
-        value: newValue,
-        originalValue: original,
-      }
-
-      console.log('update', update)
-      // this.isEditing = false
-      // this.bountyItem.title = this.$refs.bountyEditor.title.value
-      // this.$emit('update', update)
-
-      this.updateTask({
-        bountyId: this.Bounties[this.editedIndex].id,
-        taskId: key,
-        change: update,
-      })
-    },
-
-    updateBountyTask(taskId, original) {
-      console.log('taskId:', taskId)
-      console.log('value:', original)
-      console.log(
-        'event:',
-        event,
-        'update :',
-        event.target.name,
-        ' value:',
-        event.target.value
-      )
-      console.log('EDITED ITEM:', this.editedItem)
-      console.log(
-        'this.Bounties[this.editedIndex]:',
-        this.Bounties[this.editedIndex]
-      )
-
-      // console.log('current bounty', this.bountyItem)
-
-      const update = {
-        key: event.target.name,
-        value: event.target.value,
-        originalValue: original,
-      }
-
-      console.log('update', update)
-      // this.isEditing = false
-      // this.bountyItem.title = this.$refs.bountyEditor.title.value
-      // this.$emit('update', update)
-
-      this.updateTask({
-        bountyId: this.Bounties[this.editedIndex].id,
-        taskId,
-        change: update,
       })
     },
   },

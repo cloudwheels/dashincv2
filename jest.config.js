@@ -1,4 +1,6 @@
 module.exports = {
+  setupFiles: ['<rootDir>/test/setup.js'],
+  testPathIgnorePatterns: ['<rootDir>/test/cypress/', '<rootDir>/cypress/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^~/(.*)$': '<rootDir>/$1',

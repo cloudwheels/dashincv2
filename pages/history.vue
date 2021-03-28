@@ -1,6 +1,4 @@
 <template>
-  <!-- ? import Bounties component?? -->
-  <!--  <Bounties />-->
   <div>
     <div class="w3-top">
       <div class="w3-bar w3-indigo" style="letter-spacing: 4px">
@@ -24,13 +22,10 @@
 </template>
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import BountyAction from '~/components/BountyAction.vue'
+
 export default {
   name: 'BountyActionsPage',
-  components: {
-    // eslint-disable-next-line
-    'bounty-action': BountyAction,
-  },
+  components: {},
   data() {
     return {
       headers: [

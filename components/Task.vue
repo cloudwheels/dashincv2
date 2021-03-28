@@ -9,67 +9,113 @@
 .textEditCol {
   padding-top: 10px !important;
 }
+.noPadding {
+  padding: 0px;
+}
+.alignCenter {
+  text-align: center;
+}
 </style>
 <template>
   <div>
-    <v-container>
+    <v-container class="noPadding">
+      <v-row>
+        <v-col cols="1"> <v-icon>mdi-identifier</v-icon></v-col>
+        <v-col cols="11" class="text-caption"
+          >{{ task.id }}
+          <v-badge
+            v-if="isPublished"
+            offset-x="5"
+            offset-y="-5"
+            color="green"
+          ></v-badge> </v-col
+      ></v-row>
+
       <v-row align="start">
         <v-col cols="1">
-          <v-simple-checkbox></v-simple-checkbox>
+          <v-simple-checkbox
+            v-model="task.complete"
+            @click.prevent.stop.capture="completeChecked"
+          ></v-simple-checkbox>
         </v-col>
-        <v-col v-if="editing" cols="8" class="textEditCol">
-          <v-textarea v-model="editedDescription" class="textEdit"></v-textarea>
+        <v-col v-if="editingDescription" cols="8" class="textEditCol">
+          <v-textarea
+            v-model="editedDescription"
+            class="textEdit"
+            rows="2"
+            auto-grow
+          ></v-textarea>
         </v-col>
         <v-col v-else cols="8"
-          ><div :class="{ completed: completed }" @click="editDescription()">
-            {{ description }}
+          ><div
+            :class="{ completed: task.complete }"
+            @click="editDescription()"
+          >
+            {{ task.description }}
           </div></v-col
         >
+        <v-col cols="3">
+          <v-row>
+            <v-spacer />
+            <v-col class="noPadding alignCenter">
+              <DueDatePicker
+                :can-edit="canEditDue"
+                :selected-date="task.due"
+                @dateUpdated="saveEditedDueDate($event)"
+              />
+            </v-col>
+            <v-spacer />
+          </v-row>
+          <v-row>
+            <v-spacer />
+            <v-col class="noPadding alignCenter">
+              <MemberPicker
+                :can-edit="canEditAssigned"
+                :selected-member-id="task.assignedMemberId"
+                @assigneeUpdated="saveEditedAssignee($event)"
+              />
+            </v-col>
+            <v-spacer />
+          </v-row>
+          <v-row>
+            <v-spacer />
+            <v-col class="noPadding alignCenter">
+              <v-menu bottom left>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn icon v-bind="attrs" v-on="on">
+                    <v-icon>mdi-dots-horizontal</v-icon>
+                  </v-btn>
+                </template>
 
-        <v-col cols="1">
-          <v-icon @click="openDialogSetDue()">mdi-timetable</v-icon>
-        </v-col>
-
-        <v-col cols="1">
-          <v-avatar color="red" size="32" @click="openDialogSetAssigned()">
-            <span>NW</span>
-          </v-avatar>
-        </v-col>
-        <v-col cols="1">
-          <!--<v-icon>mdi-dots-vertical</v-icon>-->
-          <v-menu bottom left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn icon v-bind="attrs" v-on="on">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-
-            <v-list>
-              <v-list-item v-for="(item, i) in menuItems" :key="i">
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+                <v-list>
+                  <v-list-item v-for="(item, i) in menuItems" :key="i">
+                    <v-list-item-title>{{ item.title }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </v-col>
+            <v-spacer />
+          </v-row>
         </v-col>
       </v-row>
-      <v-row v-if="editing">
+      <v-row v-if="editingDescription">
         <v-col cols="1"></v-col>
         <v-col cols="11"
-          ><v-btn @click="cancelEdit()">cancel</v-btn>
-          <v-btn @click="saveEdit()">update</v-btn></v-col
+          ><v-btn small @click="cancelEditDescription()">cancel</v-btn>
+          <v-btn small @click="saveEditedDescription()">update</v-btn></v-col
         >
       </v-row>
       <v-row>
         <v-col cols="1"></v-col>
         <v-col cols="11"
-          ><v-chip color="primary" @click="openDialogSetReward()">
-            <!--<v-icon>mdi-bitcoin</v-icon>-->
-            {{ dashAmount }} DASH
-          </v-chip>
-          <v-badge offset-x="5" offset-y="-5" color="green"></v-badge>
+          ><RewardPicker
+            :can-edit="canEditReward"
+            :set-amount="rewardDashString"
+            @amountUpdated="saveEditedRewardDash($event)"
+          />
         </v-col>
       </v-row>
-      <v-row v-if="editing">
+      <v-row v-if="editingDescription">
         <v-col cols="1"></v-col>
         <v-col cols="11">
           <v-combobox
@@ -108,131 +154,196 @@
         </v-col>
       </v-row>
     </v-container>
-    <v-dialog v-model="dialogSetReward" max-width="500px">
-      <v-card>
-        <v-card-title>Set Dash Reward</v-card-title>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            small
-            color="blue darken-1"
-            text
-            @click="closeDialogSetReward()"
-            >Cancel</v-btn
-          >
-          <!--
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                >Archive</v-btn
-              >
-              -->
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="dialogSetDue" max-width="500px">
-      <v-card>
-        <v-card-title>Set Due Date Reward</v-card-title>
-        <v-card-text
-          ><v-row justify="center">
-            <v-date-picker v-model="picker"></v-date-picker> </v-row
-        ></v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="closeDialogSetDue()"
-            >Cancel</v-btn
-          >
-          <!--
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                >Archive</v-btn
-              >
-              -->
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <!--TODO create member/admin picker component-->
-    <v-dialog v-model="dialogSetAssigned" max-width="500px">
-      <v-card>
-        <v-card-title>Assign Member</v-card-title>
-        <v-card-text><MemberList></MemberList></v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="closeDialogSetAssigned()"
-            >Cancel</v-btn
-          >
-          <!--
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                >Archive</v-btn
-              >
-              -->
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 <script>
-import MemberList from '~/components/MemberList.vue'
+import { mapGetters, mapActions } from 'vuex'
+// import MemberList from '~/components/MemberList.vue'
+import MemberPicker from '~/components/MemberPicker.vue'
+import DueDatePicker from '~/components/DueDatePicker.vue'
+import RewardPicker from '~/components/RewardPicker.vue'
 export default {
   name: 'Task',
   components: {
-    memberList: MemberList,
+    // MemberList,
+    DueDatePicker,
+    RewardPicker,
+    MemberPicker,
   },
   props: {
+    // task: { type: Object, default: () => {} },
+    taskId: { type: String, default: '' },
+    bountyId: { type: String, default: '' },
+    /*
     id: String,
     description: String,
+    */
   },
   data() {
     return {
-      // description: 'my task',
-      dashAmount: 2,
       canEdit: true,
-      editing: false,
+      editingDescription: false,
       editedDescription: '',
-      completed: true,
-      dialogSetReward: false,
-      dialogSetDue: false,
-      dialogSetAssigned: false,
-      picker: new Date().toISOString().substr(0, 10),
       skillChips: ['Platform'],
       skills: ['javascript', 'front-end', 'vue', 'react', 'database', 'golang'],
       menuItems: [{ title: 'View Id' }],
     }
   },
+
+  computed: {
+    allTasks() {
+      return this.getTasks()
+    },
+    canEditDescription() {
+      return this.$store.state.user.admin || this.$store.state.user.superadmin
+    },
+    canEditAssigned() {
+      return this.$store.state.user.admin || this.$store.state.user.superadmin
+    },
+    canEditDue() {
+      return this.$store.state.user.admin || this.$store.state.user.superadmin
+    },
+    canEditReward() {
+      return this.$store.state.user.admin || this.$store.state.user.superadmin
+    },
+    isPublished() {
+      console.log(`Published?:`)
+      console.log(`task is not complete: ${!this.task.complete}`)
+      console.log(
+        `description has a length > 0: ${this.task.description.length > 0}`
+      )
+      console.log(`assignedMemberId : ${this.task.assignedMemberId}`)
+      console.log(
+        `assignedMemberId ===null: ${this.task.assignedMemberId === null}`
+      )
+      console.log(`due: ${this.task.due}`)
+      console.log(`due ===null: ${this.task.due === null}`)
+      return (
+        !this.task.complete &&
+        this.task.description.length > 0 &&
+        this.task.assignedMemberId === null &&
+        this.task.due === null
+      )
+    },
+    task() {
+      console.log(`All Tasks:`)
+      console.dir(this.allTasks)
+      console.log(`looking for the task with id ${this.taskId}`)
+      const thisTask = this.allTasks.filter((t) => t.id === this.taskId)[0]
+      console.log(`TASK is: ${thisTask}`)
+      console.dir(thisTask)
+      if (typeof thisTask !== 'undefined') {
+        return thisTask
+      } else {
+        // TODO: this prevents and error when adding a new task, but seems to work as a workaround!!!
+        // Remove asap
+        console.log('returning an empty task')
+        return {
+          rewardDash: null,
+          description: 'New Task',
+          complete: false,
+          due: null,
+          assignedMemberId: null,
+        }
+      }
+    },
+    rewardDashString() {
+      // parse in case of null
+      // TODO : pass null to component if not set
+      if (this.task.rewardDash === null) {
+        return '0'
+      } else {
+        return this.task.rewardDash.toString()
+      }
+    },
+  },
+
+  created() {},
+
+  mounted() {
+    console.log(this.isPublished)
+  },
+
   methods: {
+    ...mapActions(['updateTask', 'bindTasks']),
+    ...mapGetters(['getTasks']),
     editDescription() {
-      this.editedDescription = this.description
-      console.log('editing', this.editedDescription)
-      this.editing = true
-      // return (this.editing = true)
+      if (!this.canEditDescription) {
+        return
+      }
+      this.editedDescription = this.task.description
+      this.editingDescription = true
     },
-    cancelEdit() {
-      this.editing = false
-      // return this.editing
+    completeChecked() {
+      alert('complete Checked')
     },
-    saveEdit() {
-      this.$emit('updateDescription', this.editedDescription)
-      this.editing = false
-      this.editedDescription = ''
+
+    cancelEditDescription() {
+      this.editingDescription = false
     },
-    openDialogSetReward() {
-      this.dialogSetReward = true
+    saveEditedDescription() {
+      const update = {
+        key: 'description',
+        value: this.editedDescription,
+        originalValue: this.task.description,
+      }
+
+      this.updateTaskItem(update).then(() => {
+        this.editingDescription = false
+        this.editedDescription = ''
+      })
     },
-    closeDialogSetReward() {
-      this.dialogSetReward = false
+
+    saveEditedDueDate(newDate) {
+      const update = {
+        key: 'due',
+        value: newDate,
+        originalValue: this.task.due,
+      }
+
+      this.updateTaskItem(update).then(() => {
+        console.log('due date updated')
+      })
     },
-    openDialogSetDue() {
-      this.dialogSetDue = true
+
+    saveEditedAssignee(newAssignee) {
+      if (newAssignee != null) {
+        newAssignee = newAssignee.id
+      }
+      const update = {
+        key: 'assignedMemberId',
+        value: newAssignee,
+        originalValue: this.task.assignedMemberId,
+      }
+
+      this.updateTaskItem(update).then(() => {
+        console.log('assigned member updated')
+      })
     },
-    closeDialogSetDue() {
-      this.dialogSetDue = false
+
+    saveEditedRewardDash(newAmount) {
+      const update = {
+        key: 'rewardDash',
+        value: newAmount,
+        originalValue: this.task.rewardDash,
+      }
+
+      this.updateTaskItem(update).then(() => {
+        console.log('DASH reward amount updated')
+      })
     },
-    openDialogSetAssigned() {
-      this.dialogSetAssigned = true
+
+    updateTaskItem(data) {
+      // console.dir(newValue)
+      // alert(`UPDATE DESCRIPTION of task ${key} from ${original} ${newValue}`)
+
+      return this.updateTask({
+        bountyId: this.bountyId,
+        taskId: this.task.id,
+        change: data,
+      })
     },
-    closeDialogSetAssigned() {
-      this.dialogSetAssigned = false
-    },
+
     removeSkill(item) {
       this.skillChips.splice(this.skillChips.indexOf(item), 1)
       this.skillChips = [...this.skillChips]

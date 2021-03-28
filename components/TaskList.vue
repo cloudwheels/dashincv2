@@ -1,13 +1,19 @@
+<style scoped>
+.noPadding {
+  padding: 0px;
+}
+</style>
+
 <template>
-  <v-container>
+  <v-container class="noPadding">
     <v-row>
-      <v-col>
-        {{ title }}
+      <v-col class="noPadding">
+        <div class="text-h6">{{ title }}</div>
       </v-col>
     </v-row>
     <v-row>
-      <!--<v-col> {{ completedTasks }}/{{ totalTasks }} </v-col>-->
-      <v-col>
+      <!--<v-col> {{ completeTasks }}/{{ totalTasks }} </v-col>-->
+      <v-col class="noPadding">
         <v-progress-linear :value="progress" height="25">
           <template v-slot:default="{ value }">
             <strong>{{ Math.ceil(value) }}%</strong>
@@ -16,47 +22,75 @@
       </v-col>
     </v-row>
     <v-row v-for="task in tasks" :key="task.id">
+      <v-col class="noPadding">
+        <v-card elevation="2" outlined>
+          <Task :task-id="task.id" :bounty-id="bountyId" />
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-if="canAddTasks" align="start">
       <v-col>
-        <Task :id="task.id" :description="task.description" />
+        <v-btn @click.stop="addNewTask()">Add Task</v-btn>
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script>
+import { mapActions } from 'vuex'
 import Task from '~/components/Task.vue'
 export default {
   components: {
     Task,
   },
+  props: {
+    tasklistType: { type: String, default: '' },
+    tasks: { type: Array, default: () => [] },
+    bountyId: { type: String, default: '' },
+    canAddTasks: { type: Boolean, default: false },
+  },
   data() {
-    return {
-      tasklistType: 'production',
-
-      tasks: [
-        {
-          id: '123455',
-          description: 'sample task description',
-          completed: true,
-        },
-      ],
-    }
+    return {}
   },
   computed: {
     title() {
-      return (
-        this.tasklistType.charAt(0).toUpperCase() +
-        this.tasklistType.substr(1).toLowerCase() +
-        ' Tasks'
-      )
+      return this.titleCase(this.tasklistType) + ' Tasks'
     },
+
     totalTasks() {
       return this.tasks.length
     },
+
     completedTasks() {
-      return this.tasks.filter((t) => t.completed).length
+      return this.tasks.filter((t) => t.complete).length
     },
     progress() {
-      return (this.totalTasks / this.completedTasks) * 100
+      if (this.totalTasks > 0) {
+        return (this.completedTasks / this.totalTasks) * 100
+      } else {
+        return 0
+      }
+    },
+  },
+  methods: {
+    ...mapActions(['addTask']),
+
+    titleCase(word) {
+      return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase()
+    },
+
+    addNewTask() {
+      const payload = {}
+      payload.bountyId = this.bountyId
+      payload.taskType = 'tasks' + this.titleCase(this.tasklistType)
+      if (this.tasklistType.toUpperCase() === 'QA') {
+        // TODO - annoying workaround - remove/ add an enum etc
+        console.log(`Adding QA task - using workaround for field name `)
+        payload.taskType = 'tasksQA'
+      }
+
+      this.addTask(payload).then((result) => {
+        console.log(`ADD TASK RETURNED WITH RESULT: ${result}`)
+      })
     },
   },
 }

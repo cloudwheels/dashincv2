@@ -12,11 +12,11 @@ export default {
     onSubmit() {
       const admin = {
         role: {
-          admin: true,
+          superadmin: true,
         },
       }
       const setAdmin = this.$fire.functions.httpsCallable('setAdmin')
-      const data = { uid: this.$store.state.user.uid, role: admin.role }
+      const data = { uid: '5e413a386e35028d77fa7dfd', role: admin.role }
       console.log(`ADD ADMIN USER WITH DATA ${JSON.stringify(data)}`)
       setAdmin(data)
         .then((result) => {
