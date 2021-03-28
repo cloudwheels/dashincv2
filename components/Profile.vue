@@ -52,12 +52,16 @@ export default {
         }`
       )
       */
-      return (
-        this.$store.state.user.superadmin &&
-        !this.profile.role.superadmin &&
-        !this.profile.role.admin &&
-        this.profile.id !== this.$store.state.user.uid
-      )
+      if ($store.state.user) {
+        return (
+          this.$store.state.user.superadmin &&
+          !this.profile.role.superadmin &&
+          !this.profile.role.admin &&
+          this.profile.id !== this.$store.state.user.uid
+        )
+      } else {
+        return false
+      }
     },
     canDemote() {
       /*
@@ -74,11 +78,15 @@ export default {
         }`
       )
       */
-      return (
-        this.$store.state.user.superadmin &&
-        this.profile.role.admin &&
-        this.profile.id !== this.$store.state.user.uid
-      )
+      if ($store.state.user) {
+        return (
+          this.$store.state.user.superadmin &&
+          this.profile.role.admin &&
+          this.profile.id !== this.$store.state.user.uid
+        )
+      } else {
+        return false
+      }
     },
   },
   mounted() {

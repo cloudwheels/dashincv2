@@ -195,16 +195,32 @@ export default {
       return this.getTasks()
     },
     canEditDescription() {
-      return this.$store.state.user.admin || this.$store.state.user.superadmin
+      if ($store.state.user) {
+        return this.$store.state.user.admin || this.$store.state.user.superadmin
+      } else {
+        return false
+      }
     },
     canEditAssigned() {
-      return this.$store.state.user.admin || this.$store.state.user.superadmin
+      if ($store.state.user) {
+        return this.$store.state.user.admin || this.$store.state.user.superadmin
+      } else {
+        return false
+      }
     },
     canEditDue() {
-      return this.$store.state.user.admin || this.$store.state.user.superadmin
+      if ($store.state.user) {
+        return this.$store.state.user.admin || this.$store.state.user.superadmin
+      } else {
+        return false
+      }
     },
     canEditReward() {
-      return this.$store.state.user.admin || this.$store.state.user.superadmin
+      if ($store.state.user) {
+        return this.$store.state.user.admin || this.$store.state.user.superadmin
+      } else {
+        return false
+      }
     },
     isPublished() {
       console.log(`Published?:`)
